@@ -10,7 +10,7 @@ public class BallScript : MonoBehaviour
     public Vector3 startingPosition;
     public float ballx;
     public float ballz;
-    public Tuple<int, int> score;
+    public int[] score;
     public bool gameover = false;
     [SerializeField] [Range(0, 1000)] private float amplify = 1;
     public ForceMode forceMode;
@@ -19,13 +19,13 @@ public class BallScript : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        score = new Tuple<int, int>(0,0);
+        score = new int[] { 0, 0 };
 
         ballDirection();
 
 		startingPosition = gameObject.transform.position;
-        this.GetComponent<Rigidbody>();
-
+        //this.GetComponent<Rigidbody>();
+        GetComponent<Rigidbody>().velocity = new Vector3(ballSpeed * ballx, 0f, ballSpeed * ballz);
     }
 
     // Update is called once per frame
@@ -42,27 +42,29 @@ public class BallScript : MonoBehaviour
     void moveBall(Vector3 direction)
     {
         rb.MovePosition(transform.position + (direction * ballSpeed * Time.deltaTime));
-        Debug.Log("Testing: " + transform.position.x);
+        //Debug.Log("Testing: " + transform.position.x);
         if(transform.position.x > 12 || transform.position.x < -12)
 		{
             if(transform.position.x > 12)
 			{
-                score.Item1++;
+                score[0]++;
 			}
             else if(transform.position.x < -12)
 			{
-                score.Item2++;
+                score[1]++;
 			}
 
-            Debug.Log("Player 1 Score: " + score.Item1 + "\nPlayer 2 Score: " + score.Item2);
+            Debug.Log("Player 1 Score: " + score[0] + "\nPlayer 2 Score: " + score[1]);
             
-            if(score.Item1 == 11 || score.Item2 == 11)
+            if(score[0] == 3 || score[1] == 3)
 			{
-                gameover = true;
+                //gameover = true;
+                Debug.Log("Player " + (score[0] == 3 ? "1" : "2") + " wins!");
+                
 			}
             gameObject.transform.position = startingPosition;
-			if(!gameover){ ballDirection(); }
-            
+            ballDirection();
+
 
         }
     }
@@ -72,24 +74,5 @@ public class BallScript : MonoBehaviour
         ballx = Random.Range(0, 2) == 0 ? -0.25f : 0.25f;
         ballz = Random.Range(0, 2) == 0 ? -0.25f : 0.25f;
     }
-
-    // Working on this 
-    private void OnCollisionEnter(Collision collision)
-    {
-		//Rigidbody rb = collision.gameObject.GetComponent<Rigidbody>();
-		//if (collision.gameObject.tag == "TeamA")
-		//{
-		//rb.AddForce(Vector3.up * amplify, forceMode);
-		//}
-
-		//if (collision.gameObject.tag == "TeamB")
-		//{
-		//	Vector3 launchAngle = new Vector3(1, 1, 0) * amplify;
-		//    rb.AddForce(launchAngle, forceMode);
-		//}
-
-		//Debug.Log(collision.gameObject.name + " hit me");
-		moveBall(new Vector3(-ballx, -ballz, 0f));
-	}
 
 }

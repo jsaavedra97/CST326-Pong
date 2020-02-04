@@ -12,8 +12,7 @@ public class PaddleScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-		if (isLeftPaddle)
-		{
+		if (isLeftPaddle){
 			transform.Translate(0f, 0f, Input.GetAxis("Player1") * paddleMovement * Time.deltaTime);
 			//Debug.Log("Left Paddle position: " + Input.GetAxis("Player1") * paddleMovement * Time.deltaTime);
 		}
