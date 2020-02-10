@@ -9,6 +9,16 @@ public class PaddleScript : MonoBehaviour
     public bool isRightPaddle;
     public float paddleMovement = 25f;
 
+    public AudioSource paddleSoundLeft;
+    public AudioSource paddleSoundRight;
+
+
+    void Start()
+	{
+        paddleSoundLeft = GetComponent<AudioSource>();
+        paddleSoundRight = GetComponent<AudioSource>();
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -21,4 +31,16 @@ public class PaddleScript : MonoBehaviour
             //Debug.Log("Right Paddle position: " + Input.GetAxis("Player2") * paddleMovement * Time.deltaTime);
         }
     }
+
+    void OnCollisionEnter(Collision collision)
+	{
+		if (isLeftPaddle)
+		{
+            paddleSoundLeft.Play();
+		}
+		if (isRightPaddle)
+		{
+            paddleSoundRight.Play();
+		}
+	}
 }

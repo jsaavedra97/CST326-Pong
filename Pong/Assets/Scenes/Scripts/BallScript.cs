@@ -6,13 +6,16 @@ public class BallScript : MonoBehaviour
 {
     public float ballSpeed = 10.0f;
     public Rigidbody rb;
+
     public Vector3 ballMovement;
     public Vector3 startingPosition;
     public float ballx;
     public float ballz;
     public int[] score;
     public bool gameover = false;
-    [SerializeField] [Range(0, 1000)] private float amplify = 1;
+    [SerializeField] [Range(0, 1000)] private float amplify = 10;
+    [SerializeField] private float step;
+
     public ForceMode forceMode;
 
 
@@ -25,14 +28,21 @@ public class BallScript : MonoBehaviour
 
 		startingPosition = gameObject.transform.position;
         //this.GetComponent<Rigidbody>();
+        rb = gameObject.GetComponent<Rigidbody>();
         GetComponent<Rigidbody>().velocity = new Vector3(ballSpeed * ballx, 0f, ballSpeed * ballz);
     }
 
     // Update is called once per frame
     void Update()
     {
-        ballMovement = new Vector3(ballx, 0f, ballz);
+        while(ballx == ballz && ballx == 0)
+		{
+            ballDirection();
+		}
+        ballMovement = new Vector3(ballx + 0.01f, 0f, ballz);
 	}
+
+    
 
     void FixedUpdate()
 	{
@@ -71,8 +81,41 @@ public class BallScript : MonoBehaviour
 
     void ballDirection()
 	{
-        ballx = Random.Range(0, 2) == 0 ? -0.25f : 0.25f;
-        ballz = Random.Range(0, 2) == 0 ? -0.25f : 0.25f;
+        ballx = Random.Range(0, 2) == 0 ? -0.5f : 0.5f;
+        ballz = Random.Range(0, 2) == 0 ? -0.5f : 0.5f;
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+
+        if(collision.gameObject.name == "PaddleLeft" || collision.gameObject.name == "PaddleRight")
+        {
+            //play sound
+
+            Debug.Log("Paddle Hit");
+            amplify += step;
+            float offset = Mathf.Pow((transform.position.z - collision.transform.position.z), 2);
+            offset = (transform.position.z - collision.transform.position.z < 0) ? offset * -1 : offset;
+
+            rb.velocity = (collision.gameObject.name == "PaddleLeft") ? new Vector3(amplify, 0, offset) : new Vector3(-amplify, 0, offset);
+        }
+
+
+        if(collision.gameObject.tag == "PowerUp")
+        {
+            ballSpeed *= 3.0f;
+            Debug.Log("Ball Collided with me");
+            Destroy(collision.gameObject);
+        }
+
+        /*if(collision.gameObject.name == "UpperWall" || collision.gameObject.name == "LowerWall") {
+            Debug.Log("Wall Hit");
+            amplify += step;
+            float offset = Mathf.Pow((transform.position.z - collision.transform.position.z), 2);
+            offset = (transform.position.z - collision.transform.position.z < 0) ? offset * -1 : offset;
+
+            rb.velocity = (collision.gameObject.name == "UpperWall") ? new Vector3(-offset, 0, amplify) : new Vector3(-offset, 0, -amplify);
+        }*/
     }
 
 }

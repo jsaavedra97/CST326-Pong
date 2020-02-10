@@ -6,6 +6,7 @@ TagManager:
   tags:
   - TeamA
   - TeamB
+  - PowerUp
   layers:
   - Default
   - TransparentFX
