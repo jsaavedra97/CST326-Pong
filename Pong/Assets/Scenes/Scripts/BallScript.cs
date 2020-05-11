@@ -4,118 +4,84 @@ using UnityEngine;
 
 public class BallScript : MonoBehaviour
 {
-    public float ballSpeed = 10.0f;
+    public float ballSpeed;
     public Rigidbody rb;
 
-    public Vector3 ballMovement;
-    public Vector3 startingPosition;
-    public float ballx;
-    public float ballz;
-    public int[] score;
-    public bool gameover = false;
-    [SerializeField] [Range(0, 1000)] private float amplify = 10;
-    [SerializeField] private float step;
 
-    public ForceMode forceMode;
-
+    private int leftScore  = 0;
+    private int rightScore = 0;
+    public float tempSpeed;
 
     // Start is called before the first frame update
     void Start()
     {
-        score = new int[] { 0, 0 };
-
-        ballDirection();
-
-		startingPosition = gameObject.transform.position;
-        //this.GetComponent<Rigidbody>();
         rb = gameObject.GetComponent<Rigidbody>();
-        GetComponent<Rigidbody>().velocity = new Vector3(ballSpeed * ballx, 0f, ballSpeed * ballz);
+        Debug.Log(rb.position);
+        moveBall();
+        tempSpeed = ballSpeed;
     }
 
-    // Update is called once per frame
-    void Update()
+
+    void moveBall()
     {
-        while(ballx == ballz && ballx == 0)
-		{
-            ballDirection();
-		}
-        ballMovement = new Vector3(ballx + 0.01f, 0f, ballz);
-	}
-
-    
-
-    void FixedUpdate()
-	{
-        moveBall(ballMovement);
-	}
-
-    void moveBall(Vector3 direction)
-    {
-        rb.MovePosition(transform.position + (direction * ballSpeed * Time.deltaTime));
-        //Debug.Log("Testing: " + transform.position.x);
-        if(transform.position.x > 12 || transform.position.x < -12)
-		{
-            if(transform.position.x > 12)
-			{
-                score[0]++;
-			}
-            else if(transform.position.x < -12)
-			{
-                score[1]++;
-			}
-
-            Debug.Log("Player 1 Score: " + score[0] + "\nPlayer 2 Score: " + score[1]);
-            
-            if(score[0] == 3 || score[1] == 3)
-			{
-                //gameover = true;
-                Debug.Log("Player " + (score[0] == 3 ? "1" : "2") + " wins!");
-                
-			}
-            gameObject.transform.position = startingPosition;
-            ballDirection();
-
-
-        }
+        float ballx = Random.Range(0, 2) == 0 ? -1f : 1f;
+        float ballz = Random.Range(0, 2) == 0 ? -1f : 1f;
+        rb.velocity = new Vector3(ballSpeed * ballx, 0, ballSpeed * ballz);
     }
 
-    void ballDirection()
+    void ballDirection(bool leftScored)
 	{
-        ballx = Random.Range(0, 2) == 0 ? -0.5f : 0.5f;
-        ballz = Random.Range(0, 2) == 0 ? -0.5f : 0.5f;
+        // Resets attributes of Ball
+        tempSpeed = ballSpeed;
+        rb.transform.localScale = new Vector3(1, 1, 1);
+        rb.position = new Vector3(0f, 0.5f, 0f);
+
+        // Keeps track of score
+        Debug.Log("Left Score: " + leftScore + " Right Score: " + rightScore);
+
+        // Checks to see if game ended
+		if (leftScore == 3 || rightScore == 3)
+            Destroy(this);
+
+        float ballx = Random.Range(0, 2) == 0 ? -1f : 1f;
+        //float ballz = Random.Range(0, 2) == 0 ? -1f : 1f;
+
+        // My attempt at forcing the ball's direction after scoring
+        if (leftScored)
+            rb.velocity = new Vector3(ballSpeed * ballx, 0, ballSpeed);
+
+        else
+            rb.velocity = new Vector3(ballSpeed * ballx, 0, ballSpeed * -1);
+
     }
+
 
     void OnCollisionEnter(Collision collision)
     {
+        // Increases the Ball Speed
+		if (collision.gameObject.tag == "Paddle")
+		{
+            tempSpeed += 0.000025f;
+            if (collision.gameObject.name == "PaddleRight")
+                rb.AddForce(transform.right * tempSpeed, ForceMode.Impulse);
 
-        if(collision.gameObject.name == "PaddleLeft" || collision.gameObject.name == "PaddleRight")
-        {
-            //play sound
-
-            Debug.Log("Paddle Hit");
-            amplify += step;
-            float offset = Mathf.Pow((transform.position.z - collision.transform.position.z), 2);
-            offset = (transform.position.z - collision.transform.position.z < 0) ? offset * -1 : offset;
-
-            rb.velocity = (collision.gameObject.name == "PaddleLeft") ? new Vector3(amplify, 0, offset) : new Vector3(-amplify, 0, offset);
+            if (collision.gameObject.name == "PaddleLeft")
+                rb.AddForce(transform.right * -tempSpeed, ForceMode.Impulse); ;
         }
 
+        if (collision.gameObject.name == "Left Goal")
+		{
+            rightScore++;
+            ballDirection(false);
+		}
 
-        if(collision.gameObject.tag == "PowerUp")
-        {
-            ballSpeed *= 3.0f;
-            Debug.Log("Ball Collided with me");
-            Destroy(collision.gameObject);
-        }
+		if (collision.gameObject.name == "Right Goal")
+		{
+            leftScore++;
+            ballDirection(true);
+		}
 
-        /*if(collision.gameObject.name == "UpperWall" || collision.gameObject.name == "LowerWall") {
-            Debug.Log("Wall Hit");
-            amplify += step;
-            float offset = Mathf.Pow((transform.position.z - collision.transform.position.z), 2);
-            offset = (transform.position.z - collision.transform.position.z < 0) ? offset * -1 : offset;
 
-            rb.velocity = (collision.gameObject.name == "UpperWall") ? new Vector3(-offset, 0, amplify) : new Vector3(-offset, 0, -amplify);
-        }*/
-    }
+	}
 
 }
